@@ -1,0 +1,180 @@
+--Spotify Analysis--
+
+--Create Table--
+DROP TABLE IF EXISTS spotify;
+CREATE TABLE spotify (
+    artist VARCHAR(260),
+    track VARCHAR(260),
+    album VARCHAR(260),
+    album_type VARCHAR(60),
+    danceability FLOAT,
+    energy FLOAT,
+    loudness FLOAT,
+    speechiness FLOAT,
+    acousticness FLOAT,
+    instrumentalness FLOAT,
+    liveness FLOAT,
+    valence FLOAT,
+    tempo FLOAT,
+    duration_min FLOAT,
+    title VARCHAR(260),
+    channel VARCHAR(260),
+    views FLOAT,
+    likes FLOAT,
+    comments FLOAT,
+    licensed BOOLEAN,
+    official_video BOOLEAN,
+    stream FLOAT,
+    energy_liveness FLOAT,
+    most_played_on VARCHAR(60)
+);
+
+-- EDA
+SELECT COUNT(*) FROM spotify;
+
+SELECT COUNT(DISTINCT artist) FROM spotify;
+
+SELECT DISTINCT album_type FROM spotify;
+
+SELECT MAX(duration_min) FROM spotify;
+SELECT MIN(duration_min) FROM spotify;
+
+
+DELETE FROM spotify
+WHERE duration_min = 0;
+
+SELECT *
+FROM spotify
+WHERE duration_min = 0;
+
+--------------------------------------------
+-----------Key business analysis------------
+
+--Retrieve the names of all tracks that have more than 1 billion streams.
+SELECT track
+FROM spotify
+WHERE stream > 1000000000;
+
+--List all albums along with their respective artists.
+SELECT album,
+       artist
+FROM spotify
+GROUP BY 2,1
+ORDER BY 2;
+
+--Get the total number of comments for tracks where licensed = TRUE.
+SELECT SUM(comments),
+	   track
+FROM spotify
+WHERE licensed = TRUE
+GROUP BY 2;
+
+
+
+--Find all tracks that belong to the album type single.
+SELECT track
+FROM spotify
+WHERE album_type ILIKE 'single';
+
+
+--Count the total number of tracks by each artist.
+SELECT COUNT(track),
+       artist
+FROM spotify
+GROUP BY 2
+ORDER BY 1 DESC;
+
+--Calculate the average danceability of tracks in each album.
+SELECT avg(danceability) as avg_danceability,
+       album	   
+FROM spotify
+GROUP BY 2
+ORDER BY 1 DESC;
+
+
+
+--Find the top 5 tracks with the highest energy values.
+SELECT track,
+       energy
+FROM spotify
+ORDER BY 2 DESC;
+
+
+
+
+--List all tracks along with their views and likes where official_video = TRUE.
+SELECT track,
+       SUM(views),
+	   SUM(likes)
+FROM spotify
+WHERE official_video = TRUE
+GROUP BY 1
+ORDER BY 2 DESC;
+
+
+--For each album, calculate the total views of all associated tracks.
+SELECT album,
+       track,
+       SUM(views) as total_views
+FROM spotify
+GROUP BY 1,2
+ORDER BY 3 DESC;
+
+--Retrieve the track names that have been streamed on Spotify more than YouTube.
+SELECT * FROM
+(
+SELECT 
+	spotify.track,
+	COALESCE(SUM(CASE WHEN most_played_on = 'Youtube' THEN stream END),0) as stream_youtube,
+	COALESCE(SUM(CASE WHEN most_played_on = 'Spotify' THEN stream END),0) as stream_spotify
+FROM spotify
+GROUP BY 1
+) as t1
+WHERE 
+	stream_spotify > stream_youtube
+	AND
+	stream_youtube <> 0;
+
+
+--Find the top 3 most-viewed tracks for each artist using window functions.
+
+
+WITH rank_artist
+AS
+(
+SELECT
+	artist,
+	track,
+	SUM(views) as total_views,
+	DENSE_RANK() OVER(PARTITION BY artist ORDER BY SUM(views) DESC) as rank
+FROM spotify
+GROUP BY 1,2
+ORDER BY 1,3 DESC
+)
+SELECT * FROM rank_artist
+WHERE rank <= 3 ;
+
+--Write a query to find tracks where the liveness score is above the average.
+SELECT 
+	liveness,
+	track
+FROM spotify
+WHERE liveness > (SELECT AVG(liveness) FROM spotify) 
+
+--Use a WITH clause to calculate the difference between 
+--the highest and lowest energy values for tracks in each album.
+WITH cte
+AS
+(
+SELECT
+	album,
+	MAX(energy) as max_energy,
+	MIN(energy) as min_energy
+FROM spotify
+GROUP BY 1
+)
+SELECT 
+	album,
+	max_energy - min_energy as energy_diff
+FROM cte
+ORDER BY 2 DESC;
