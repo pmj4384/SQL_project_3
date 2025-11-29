@@ -1,24 +1,23 @@
-# # 🎵 Spotify Tracks Analysis
+# Spotify Tracks Analysis SQL Project
 
-**SQL analysis of Spotify data with audio features, streams, and YouTube metrics.**
+## Overview
+SQL analysis of Spotify tracks combining audio features, streams, and YouTube metrics to uncover top performers and music trends for industry stakeholders.
 
-[![SQL](https://img.shields.io/badge/SQL-Window%20Functions%20CTEs-blue?style=for-the-badge&logo=postgresql)](https://postgresql.org)
+## Data
+Spotify table with artist, track, album, danceability, energy, stream, views, likes, official_video, and most_played_on columns.
 
-## What it does
-Analyzes thousands of Spotify tracks to find:
+## Key Analyses
 - Billion-stream hits
-- Top 3 tracks per artist (using DENSE_RANK)
-- Spotify vs YouTube performance
-- Album energy ranges (CTE)
-- Official video stats
+- Top 3 tracks per artist  
+- Spotify vs YouTube streams
+- Album danceability/energy ranges
+- Official video performance
 
-## Key SQL skills
-- Window functions: `DENSE_RANK() OVER(PARTITION BY artist...)`
-- CTEs for clean multi-step logic
-- Data cleaning + aggregations
-- Subqueries for dynamic filters
+## Techniques
+Window functions (DENSE_RANK, PARTITION BY), CTEs, aggregations (SUM/AVG), data cleaning, subqueries, conditional logic.[attached_file:1]
 
-## Run it
-1. CREATE TABLE spotify
-2. LOAD CSV data  
-3. Run queries
+## How to Use
+Load spotify data into PostgreSQL and run queries using pgAdmin or any SQL client. Includes EDA and 15+ business analyses.
+
+## Business Impact
+Demonstrates advanced SQL for music analytics—window functions, CTEs, platform comparisons. Ideal for data analyst portfolios targeting media roles.[memory:50]
